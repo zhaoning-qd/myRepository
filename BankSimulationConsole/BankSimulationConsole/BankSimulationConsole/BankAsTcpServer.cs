@@ -38,7 +38,7 @@ namespace BankSimulationConsole
             localAddr = Dns.GetHostAddresses(Dns.GetHostName());
            // ipAddress = localAddr[0];
             ipAddress = new IPAddress(new byte[] {127,0,0,1 });
-            Console.WriteLine("\t\t\t银行模拟通讯程序");
+            Console.WriteLine("\t\t\t银行通讯模拟程序");
             Console.WriteLine("-----------------------------------------------------------------");
         }
 
