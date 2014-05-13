@@ -31,7 +31,7 @@ namespace Business
         private string LoanReleaseMessage(byte[] recvBytes)
         {
             //解析请求报文
-            byte[] length = new byte[4];//length:274
+            byte[] length = new byte[4];//length:420
             byte[] transcationCode = new byte[4];//2005
             byte[] returnCode = new byte[4];
             byte[] returnInfo = new byte[60];
