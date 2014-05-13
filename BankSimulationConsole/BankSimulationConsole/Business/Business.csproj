@@ -49,6 +49,7 @@
     <Compile Include="CAAuthentication.cs" />
     <Compile Include="CardBalanceQuery.cs" />
     <Compile Include="DK_LaunchBatchWithdraw.cs" />
+    <Compile Include="DK_LoanRelease.cs" />
     <Compile Include="DK_LoanSingleWithHold.cs" />
     <Compile Include="LoanCheckingInfoDistribution.cs" />
     <Compile Include="MicroPaymentWithholding.cs" />
