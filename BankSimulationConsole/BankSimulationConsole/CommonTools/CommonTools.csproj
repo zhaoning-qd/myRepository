@@ -36,6 +36,10 @@
     <Reference Include="log4net">
       <HintPath>..\..\BankTcpProgram\BankTcpProgram\bin\Debug\log4net.dll</HintPath>
     </Reference>
+    <Reference Include="ManagedOpenSsl, Version=0.6.0.0, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\ManagedOpenSsl.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
@@ -49,6 +53,7 @@
     <Compile Include="BusinessFactory.cs" />
     <Compile Include="BusinessTools.cs" />
     <Compile Include="LogHelper.cs" />
+    <Compile Include="OpensslHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
