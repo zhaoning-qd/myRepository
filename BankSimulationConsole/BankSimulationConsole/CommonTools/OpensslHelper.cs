@@ -32,7 +32,7 @@ namespace CommonTools
 
         public byte[] Encrypt(byte[] msg)
         {
-            return cipherContext.Encrypt(msg, Key, IV);
+            return cipherContext.Encrypt(msg, this.Key, this.IV);
         }
 
         public byte[] Decrypt(byte[] msg)
