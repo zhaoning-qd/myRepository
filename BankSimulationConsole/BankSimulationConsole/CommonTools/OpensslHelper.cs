@@ -20,15 +20,18 @@ namespace CommonTools
             this.EncodingName = encodingname;
             this.Password = Encoding.GetEncoding(EncodingName).GetBytes(password);
             cipherContext = new CipherContext(Cipher.DES_EDE3_CBC);
+            GenerateKeyIV();
         }
 
-
-        public byte[] Encrypt(byte[] msg)
+        public void GenerateKeyIV()
         {
             byte[] Iv;
             Key = cipherContext.BytesToKey(MessageDigest.MD5, null, this.Password, 8, out Iv);
             this.IV = Iv;
+        }
 
+        public byte[] Encrypt(byte[] msg)
+        {
             return cipherContext.Encrypt(msg, Key, IV);
         }
 

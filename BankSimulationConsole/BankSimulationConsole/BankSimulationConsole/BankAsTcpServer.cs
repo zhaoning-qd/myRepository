@@ -138,7 +138,7 @@ namespace BankSimulationConsole
         {
             //获取交易码，根据交易码调用具体的业务对象;
             string transcationCode;
-            transcationCode = Encoding.UTF8.GetString(recvBytes).Substring(0, 4);
+            transcationCode = Encoding.Default.GetString(recvBytes).Substring(0, 4);
             byte[] returnBytes;
 
             string assemblyName = "Business";
