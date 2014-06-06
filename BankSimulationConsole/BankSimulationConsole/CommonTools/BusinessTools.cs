@@ -161,5 +161,28 @@ namespace CommonTools
 
             return i.ToString();
         }
+
+        /// <summary>
+        /// 银行流水号：日期+序号
+        /// </summary>
+        /// <param name="i"></param>
+        /// <returns></returns>
+        public static string GenerateLongBankSerialNum(int i)
+        {
+            //获取系统当前日期
+            int year = DateTime.Now.Year;
+            int month = DateTime.Now.Month + 1;
+            int day = DateTime.Now.Day;
+
+            string strDate = year.ToString() + month.ToString() + day.ToString();
+            if (i < 10)
+            {
+                return strDate + "0" + i.ToString();
+            }
+            else
+            {
+                return strDate + i.ToString();
+            }
+        }
     }
 }

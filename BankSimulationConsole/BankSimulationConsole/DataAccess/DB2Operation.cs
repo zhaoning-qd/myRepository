@@ -38,5 +38,32 @@ namespace DataAccess
                 return false;
             }
         }
+
+        /// <summary>
+        /// 查询记录数查询
+        /// </summary>
+        /// <param name="command"></param>
+        /// <returns></returns>
+        public int ExecuteCountQuery(string command)
+        {
+            int count = 0;
+            string connString = ConfigurationManager.AppSettings["DB2Connection"];
+            try
+            {
+                DB2Connection conn = new DB2Connection(connString);
+                DB2Command cmd = new DB2Command(command, conn);
+                conn.Open();
+                count = Convert.ToInt32(cmd.ExecuteScalar());
+                conn.Close();
+
+                return count;
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return -1;
+            }
+        }
     }
 }

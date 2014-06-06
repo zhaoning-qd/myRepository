@@ -68,6 +68,10 @@
       <Project>{27DD6255-20D6-444E-BADB-4268A25B906A}</Project>
       <Name>CommonTools</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Entities\Entities.csproj">
+      <Project>{7B784AFE-BA87-44DC-A1B5-A54A193C4E02}</Project>
+      <Name>Entities</Name>
+    </ProjectReference>
     <ProjectReference Include="..\IBusiness\IBusiness.csproj">
       <Project>{15CC5060-E0C0-4565-97D3-C48B9EDE68F7}</Project>
       <Name>IBusiness</Name>
