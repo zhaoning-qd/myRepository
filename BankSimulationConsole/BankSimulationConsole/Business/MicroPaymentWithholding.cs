@@ -8,6 +8,7 @@ using System.IO;
 using System.Threading;
 using IDataAccess;
 using System.Configuration;
+using Entities;
 
 namespace Business
 {
@@ -183,6 +184,9 @@ namespace Business
                         {
                             sw.WriteLine(outputLine.ToString());
                         }
+
+                        //更新账表分户账和账表明细账
+                       // UpateZbfhzAndZbmxz(inputArray);
                     }
                 }
                 Console.WriteLine("文件处理成功");
@@ -290,6 +294,143 @@ namespace Business
                     return "";
 
             }
+        }
+
+
+        /// <summary>
+        /// 查询zbmxz中某账号的笔数
+        /// </summary>
+        /// <returns></returns>
+        private int GetCountByZh(ZbmxzEntity zbmxz)
+        {
+            string assemblyName = "DataAccess";
+            string namespaceName = "DataAccess";
+            string className = ConfigurationManager.AppSettings["db2Operation"].Split(new char[] { '.' })[1];
+            IDB2Operation iDB2Operation = BusinessFactory.CreateInstance<IDB2Operation>(assemblyName, namespaceName, className);
+
+            return iDB2Operation.ExecuteCountQuery(zbmxz.ToCountStringByZh());
+        }
+
+
+        /// <summary>
+        ///更新zbfhz和zbmxz
+        /// </summary>
+        /// <param name="lineArray"></param>
+        /// <returns></returns>
+        private bool UpateZbfhzAndZbmxz(string[] lineArray)
+        {
+            //账表明细账
+            bool zt1,zt2;
+            ZbmxzEntity zbmxz = new ZbmxzEntity();
+            zbmxz.Zh = lineArray[5];
+            int iBs = this.GetCountByZh(zbmxz);
+            if (iBs == -1)
+            {
+                Console.WriteLine("查询账号{0}对应的笔数出错", zbmxz.Zh);
+                return false;
+            }
+            else
+            {
+                zbmxz.Bc = (iBs + 1).ToString();
+                zbmxz.Jyrq = DateTime.Now.ToShortDateString();
+                zbmxz.Jysj = DateTime.Now.ToLongTimeString();
+                zbmxz.Fse = lineArray[3];
+                zbmxz.Ye = "200000";
+                Random radom = new Random();
+                zbmxz.Yhls = BusinessTools.GenerateLongBankSerialNum(radom.Next(99));
+                zbmxz.Pjhm = lineArray[10];
+                zbmxz.Jdbz = "2";
+                zbmxz.Ywlx = "1";
+                zbmxz.Dfzh = lineArray[2];
+                zbmxz.Dfhm = lineArray[3];
+                zbmxz.Zxjsh = lineArray[1];
+
+                string cmd = zbmxz.ToInsertString();
+                if (ExecuteUpdateCmd(cmd))
+                {
+                    Console.WriteLine("插入zbmxz成功");
+                    zt1 = true;
+                }
+                else
+                {
+                    Console.WriteLine("插入zbmxz失败");
+                    zt1 = false;
+                }
+            }
+
+            //账表分户账
+            ZbfhzEntity zbfhz = new ZbfhzEntity();
+            zbfhz.Yhzh = zbmxz.Zh;
+            zbfhz.Ye = "20000";
+            zbfhz.Bs = zbmxz.Bc;
+            zbfhz.Sbrq = DateTime.Now.ToShortDateString();
+            zbfhz.Hm = lineArray[6];
+
+            int num = this.GetCountByZh(zbfhz);
+
+            if (num == -1)
+            {
+                Console.WriteLine("查询账号{0}是否存在时出错", zbfhz.Yhzh);
+                return false;
+            }
+            if (num == 0)
+            {
+                if (this.ExecuteUpdateCmd(zbfhz.ToInsertString()))
+                {
+                    Console.WriteLine("插入zbfhz成功");
+                    zt2 = true;
+                }
+                else
+                {
+                    Console.WriteLine("插入zbfhz失败");
+                    zt2 = false;
+                }
+            }
+            else
+            {
+                if (this.ExecuteUpdateCmd(zbfhz.ToUpdateString()))
+                {
+                    Console.WriteLine("更新zbfhz成功");
+                    zt2 = true;
+                }
+                else
+                {
+                    Console.WriteLine("更新zbfhz失败");
+                    zt2 = false;
+                }
+            }
+
+            return (zt1 && zt2);
+        }
+
+        /// <summary>
+        /// 执行更新或插入命令
+        /// </summary>
+        /// <param name="cmd"></param>
+        /// <returns></returns>
+        private bool ExecuteUpdateCmd(string cmd)
+        {
+            string assemblyName = "DataAccess";
+            string namespaceName = "DataAccess";
+            string className = ConfigurationManager.AppSettings["db2Operation"].Split(new char[] { '.' })[1];
+            IDB2Operation iDB2Operation = BusinessFactory.CreateInstance<IDB2Operation>(assemblyName, namespaceName, className);
+
+            return iDB2Operation.ExecuteDB2Update(cmd);
+
+        }
+
+        /// <summary>
+        /// 查询zbfhz中某账号的笔数
+        /// </summary>
+        /// <returns></returns>
+        private int GetCountByZh(ZbfhzEntity zbfhz)
+        {
+            string assemblyName = "DataAccess";
+            string namespaceName = "DataAccess";
+            string className = ConfigurationManager.AppSettings["db2Operation"].Split(new char[] { '.' })[1];
+            IDB2Operation iDB2Operation = BusinessFactory.CreateInstance<IDB2Operation>(assemblyName, namespaceName, className);
+
+            return iDB2Operation.ExecuteCountQuery(zbfhz.ToCountStringByZh());
         }
     }
 }

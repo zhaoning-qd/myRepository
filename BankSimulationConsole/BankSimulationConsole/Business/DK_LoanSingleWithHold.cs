@@ -40,7 +40,7 @@ namespace Business
             s = LoanSingleWithHoldMessage(recvBytes);
 
             //写zbfhz和zbmxz
-            UpateZbfhzAndZbmxz(recvBytes);
+            //UpateZbfhzAndZbmxz(recvBytes);
 
             LogHelper.WriteLogInfo("贷款单笔扣款", "成功");
             return Encoding.Default.GetBytes(s);
@@ -229,7 +229,7 @@ namespace Business
         }
 
         /// <summary>
-        /// 查询zbmxz中某账号的笔数
+        /// 查询zbfhz中某账号的笔数
         /// </summary>
         /// <returns></returns>
         private int GetCountByZh(ZbfhzEntity zbfhz)
