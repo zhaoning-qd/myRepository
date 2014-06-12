@@ -13,6 +13,9 @@ using CommonTools;
 
 namespace BankSimulationConsole
 {
+    /// <summary>
+    /// Tcp类
+    /// </summary>
     class BankAsTcpServer
     {
         private TcpListener myListener;
