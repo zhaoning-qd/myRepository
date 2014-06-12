@@ -5,6 +5,7 @@ using System.Text;
 using IBusiness;
 using CommonTools;
 using System.Threading;
+using Entities;
 
 
 namespace Business
@@ -14,6 +15,9 @@ namespace Business
     /// </summary>
     public class ZQ_BankselfRealTimePayment : GjjBusinessSuper
     {
+        ZbfhzEntity zbfhz = new ZbfhzEntity();
+        ZbmxzEntity zbmxz = new ZbmxzEntity();
+
         /// <summary>
         /// 处理业务
         /// </summary>

@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BankCountCheckByDay.cs" />
+    <Compile Include="BusinessHelper.cs" />
     <Compile Include="BusinessLoanAllBusiness.cs" />
     <Compile Include="BusinessLoanDetailSending.cs" />
     <Compile Include="CAAuthentication.cs" />

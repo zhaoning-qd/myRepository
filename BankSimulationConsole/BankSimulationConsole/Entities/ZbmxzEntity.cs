@@ -76,6 +76,15 @@ namespace Entities
         public string Zxjsh { get; set; }
 
         /// <summary>
+        /// 构造函数--初始化日期和时间
+        /// </summary>
+        public ZbmxzEntity()
+        {
+            this.Jyrq = DateTime.Now.ToShortDateString();
+            this.Jysj = DateTime.Now.ToLongTimeString();
+        }
+
+        /// <summary>
         /// 将字段转换为数据库插入命令
         /// </summary>
         /// <returns></returns>

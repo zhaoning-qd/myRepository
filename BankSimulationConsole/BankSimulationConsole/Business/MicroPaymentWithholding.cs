@@ -296,22 +296,6 @@ namespace Business
             }
         }
 
-
-        /// <summary>
-        /// 查询zbmxz中某账号的笔数
-        /// </summary>
-        /// <returns></returns>
-        private int GetCountByZh(ZbmxzEntity zbmxz)
-        {
-            string assemblyName = "DataAccess";
-            string namespaceName = "DataAccess";
-            string className = ConfigurationManager.AppSettings["db2Operation"].Split(new char[] { '.' })[1];
-            IDB2Operation iDB2Operation = BusinessFactory.CreateInstance<IDB2Operation>(assemblyName, namespaceName, className);
-
-            return iDB2Operation.ExecuteCountQuery(zbmxz.ToCountStringByZh());
-        }
-
-
         /// <summary>
         ///更新zbfhz和zbmxz
         /// </summary>
@@ -432,5 +416,20 @@ namespace Business
 
             return iDB2Operation.ExecuteCountQuery(zbfhz.ToCountStringByZh());
         }
+
+        /// <summary>
+        /// 查询zbmxz中某账号的笔数
+        /// </summary>
+        /// <returns></returns>
+        private int GetCountByZh(ZbmxzEntity zbmxz)
+        {
+            string assemblyName = "DataAccess";
+            string namespaceName = "DataAccess";
+            string className = ConfigurationManager.AppSettings["db2Operation"].Split(new char[] { '.' })[1];
+            IDB2Operation iDB2Operation = BusinessFactory.CreateInstance<IDB2Operation>(assemblyName, namespaceName, className);
+
+            return iDB2Operation.ExecuteCountQuery(zbmxz.ToCountStringByZh());
+        }
+
     }
 }
