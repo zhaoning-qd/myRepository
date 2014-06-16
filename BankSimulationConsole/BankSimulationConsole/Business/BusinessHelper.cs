@@ -12,6 +12,15 @@ namespace Business
     class BusinessHelper
     {
         /// <summary>
+        /// 设置余额
+        /// </summary>
+        /// <returns></returns>
+        public static int  SetYe()
+        {
+            return 200000;
+        }
+
+        /// <summary>
         /// 查询zbmxz中某账号的笔数
         /// </summary>
         /// <returns></returns>

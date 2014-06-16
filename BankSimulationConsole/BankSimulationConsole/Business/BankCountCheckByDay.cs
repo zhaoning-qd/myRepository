@@ -16,6 +16,12 @@ namespace Business
     /// </summary>
     public class BankCountCheckByDay:GjjBusinessSuper
     {
+        //请求报文字段
+        private string jym = "";//交易码
+        private string yhzh = "";//银行账号
+        private string qsrq = "";//起始日期
+        private string zzrq = "";//终止日期
+
         /// <summary>
         /// 处理业务
         /// </summary>
@@ -26,18 +32,17 @@ namespace Business
             byte[] bankCount = BusinessTools.SubBytesArray(recvBytes, 4, 30);
             byte[] qsrq = BusinessTools.SubBytesArray(recvBytes, 34, 8);
             byte[] zzrq = BusinessTools.SubBytesArray(recvBytes, 42, 8);
+
+            this.jym = Encoding.Default.GetString(transcationCode).TrimEnd();
+            this.yhzh = Encoding.Default.GetString(bankCount).TrimEnd();
+            this.qsrq = Encoding.Default.GetString(qsrq).TrimEnd();
+            this.zzrq = Encoding.Default.GetString(zzrq).TrimEnd();
+
             //生成对账明细
-            string fileName = GenetrateCountCheckingFile(Encoding.Default.GetString(transcationCode),
-                                                         Encoding.Default.GetString(bankCount),
-                                                         Encoding.Default.GetString(qsrq),
-                                                         Encoding.Default.GetString(zzrq));
+            string fileName = GenetrateCountCheckingFile(this.jym,this.yhzh,this.qsrq,this.zzrq);
             //生成返回报文
             string s = "";
-            s = BankCountCheckMessage(Encoding.Default.GetString(transcationCode),
-                                                     Encoding.Default.GetString(bankCount),
-                                                     Encoding.Default.GetString(qsrq),
-                                                     Encoding.Default.GetString(zzrq),
-                                                     fileName);
+            s = BankCountCheckMessage(this.jym, this.yhzh, this.qsrq, this.zzrq,fileName);
 
             LogHelper.WriteLogInfo("银行记账日终对账", "对账成功");
             return Encoding.Default.GetBytes(s);

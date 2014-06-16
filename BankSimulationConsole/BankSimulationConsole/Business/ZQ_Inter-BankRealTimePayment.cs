@@ -5,6 +5,7 @@ using System.Text;
 using IBusiness;
 using CommonTools;
 using System.Threading;
+using Entities;
 
 namespace Business
 {
@@ -13,6 +14,22 @@ namespace Business
     /// </summary>
     public class ZQ_Inter_BankRealTimePayment:GjjBusinessSuper
     {
+        //请求报文字段
+        private string jym = "";//交易码
+        private string pch = "";//批次号
+        private string fkrzh = "";//付款人账号(中心)
+        private string fkrmc = "";//付款人名称(中心)
+        private string fkyhmc = "";//付款银行名称
+        private string skrzh = "";//收款人账号
+        private string skrmc = "";//收款人名称
+        private string skyhmc = "";//收款银行名称
+        private string skrkhhh = "";//收款人开户行号
+        private string je = "";//金额
+        private string beiz = "";//备注
+
+        private string yhls = "";//银行流水
+
+
         /// <summary>
         /// 处理业务
         /// </summary>
@@ -63,20 +80,37 @@ namespace Business
             BusinessTools.InitializeByteArray(money, 12);
             BusinessTools.InitializeByteArray(remark, 60);
 
+            //解析请求报文
+            this.jym = Encoding.Default.GetString(BusinessTools.SubBytesArray(recvBytes, 0, 4)).TrimEnd();
+            this.pch = Encoding.Default.GetString(BusinessTools.SubBytesArray(recvBytes, 4, 20)).TrimEnd();
+            this.fkrzh = Encoding.Default.GetString(BusinessTools.SubBytesArray(recvBytes, 24, 30)).TrimEnd();
+            this.fkrmc = Encoding.Default.GetString(BusinessTools.SubBytesArray(recvBytes, 54, 60)).TrimEnd();
+            this.fkyhmc = Encoding.Default.GetString(BusinessTools.SubBytesArray(recvBytes, 114, 60)).TrimEnd();
+            this.skrzh = Encoding.Default.GetString(BusinessTools.SubBytesArray(recvBytes, 174, 30)).TrimEnd();
+            this.skrmc = Encoding.Default.GetString(BusinessTools.SubBytesArray(recvBytes, 204, 60)).TrimEnd();
+            this.skyhmc = Encoding.Default.GetString(BusinessTools.SubBytesArray(recvBytes, 264, 60)).TrimEnd();
+            this.skrkhhh = Encoding.Default.GetString(BusinessTools.SubBytesArray(recvBytes, 324, 12)).TrimEnd();
+            this.je = Encoding.Default.GetString(BusinessTools.SubBytesArray(recvBytes, 336, 12)).TrimEnd();
+            this.beiz = Encoding.Default.GetString(BusinessTools.SubBytesArray(recvBytes, 348, 60)).TrimEnd();
+
             //赋值byte[];
             BusinessTools.SetByteArray(length, "0420");
-            BusinessTools.SetByteArray(transcationCode, "2013");
+            BusinessTools.SetByteArray(transcationCode, this.jym);
             BusinessTools.SetByteArray(returnCode, "0000");
-            BusinessTools.SetByteArray(batchCode, "1100090673");
-            BusinessTools.SetByteArray(bankSerialNum, "2003033101");
-            BusinessTools.SetByteArray(paryerCount, "4857685747385947584");
-            BusinessTools.SetByteArray(payerName, "青岛市住房公积金管理中心");
-            BusinessTools.SetByteArray(payBankName, "中国工商银行青岛市市南区山东路分行");
-            BusinessTools.SetByteArray(recvCount, "4857685747385947123");
-            BusinessTools.SetByteArray(recvName, "中国中铁青岛建设局市南区山东路分局");
-            BusinessTools.SetByteArray(recvBank, "中国建设银行青岛市市南区山东路分行");
-            BusinessTools.SetByteArray(money, "3434354");
-            BusinessTools.SetByteArray(remark, "This is the test message from GJJ");
+            BusinessTools.SetByteArray(batchCode, this.pch);
+            //银行流水
+            Random radom = new Random();
+            this.yhls = BusinessTools.GenerateLongBankSerialNum(radom.Next(99));
+            BusinessTools.SetByteArray(bankSerialNum,this.yhls );
+            
+            BusinessTools.SetByteArray(paryerCount, this.fkrzh);
+            BusinessTools.SetByteArray(payerName, this.fkrmc);
+            BusinessTools.SetByteArray(payBankName, this.fkyhmc);
+            BusinessTools.SetByteArray(recvCount, this.skrzh);
+            BusinessTools.SetByteArray(recvName, this.skrmc);
+            BusinessTools.SetByteArray(recvBank, this.skyhmc);
+            BusinessTools.SetByteArray(money, this.je);
+            BusinessTools.SetByteArray(remark, this.beiz);
 
             string s = "";
             s += Encoding.Default.GetString(length);
@@ -94,6 +128,34 @@ namespace Business
             s += Encoding.Default.GetString(remark);
 
             return s;
+        }
+
+        /// <summary>
+        /// 更新账表分户账和账表明细账
+        /// </summary>
+        private void UpdateZbInfo()
+        {
+            ZbfhzEntity zbfhz = new ZbfhzEntity();
+            ZbmxzEntity zbmxz = new ZbmxzEntity();
+
+            zbmxz.Zh = this.skrzh;
+            int iBs = BusinessHelper.GetCountByZh(zbmxz);
+            zbmxz.Bc = (iBs + 1).ToString();
+            zbmxz.Fse = this.je;
+            zbmxz.Yhls = this.yhls;
+            zbmxz.Pjhm = this.pch;
+            zbmxz.Jdbz = "2";
+            zbmxz.Ywlx = "1";
+            zbmxz.Dfzh = this.fkrzh;
+            zbmxz.Dfhm = this.fkrmc;
+            zbmxz.Zxjsh = this.fkrzh;
+
+            zbfhz.Yhzh = zbmxz.Zh;
+            zbfhz.Bs = zbmxz.Bc;
+            zbfhz.Hm = this.skrmc;
+
+            BusinessHelper.UpateZbfhzAndZbmxz(zbmxz, zbfhz);
+
         }
     }
 }

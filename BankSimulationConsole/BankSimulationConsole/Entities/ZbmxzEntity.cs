@@ -82,6 +82,7 @@ namespace Entities
         {
             this.Jyrq = DateTime.Now.ToShortDateString();
             this.Jysj = DateTime.Now.ToLongTimeString();
+            this.Ye = "200000";
         }
 
         /// <summary>

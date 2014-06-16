@@ -35,6 +35,12 @@ namespace Entities
         /// </summary>
         public string Hm { get; set; }
 
+        public ZbfhzEntity()
+        {
+            this.Sbrq = DateTime.Now.ToShortDateString();
+            this.Ye = "200000";
+        }
+
         /// <summary>
         /// 将字段转换为数据库插入命令
         /// </summary>
