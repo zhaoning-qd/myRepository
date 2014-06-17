@@ -6,8 +6,12 @@ using System.IO;
 using System.Configuration;
 using System.Diagnostics;
 using System.Data;
+
 using IBusiness;
 using CommonTools;
+
+using Entities;
+using Entities.BllModels;
 
 namespace Business
 {
@@ -16,6 +20,11 @@ namespace Business
     /// </summary>
     public class WTZQ_RealTimeTrade:GjjBusinessSuper
     {
+        /// <summary>
+        /// 网厅支取--实时交易日终对账实体
+        /// </summary>
+        WtzqSsjyModel wtzqssjy = new WtzqSsjyModel();
+
         /// <summary>
         /// 处理业务
         /// </summary>
@@ -29,39 +38,33 @@ namespace Business
             byte[] sumRecords = BusinessTools.SubBytesArray(recvBytes, 46, 6);
             byte[] sumMoney = BusinessTools.SubBytesArray(recvBytes, 52, 16);
 
-            string s1 = Encoding.Default.GetString(transcationCode);
-            string s2 = Encoding.Default.GetString(batchCodeStart);
-            string s3 = Encoding.Default.GetString(batchCodeEnd);
-            string s4 = Encoding.Default.GetString(jgm);
-            string s5 = Encoding.Default.GetString(sumRecords);
-            string s6 = Encoding.Default.GetString(sumMoney);
+            wtzqssjy.Jym = Encoding.Default.GetString(transcationCode).TrimEnd();
+            wtzqssjy.Kspch = Encoding.Default.GetString(batchCodeStart).TrimEnd();
+            wtzqssjy.Jspch = Encoding.Default.GetString(batchCodeEnd).TrimEnd();
+            wtzqssjy.Jgm = Encoding.Default.GetString(jgm).TrimEnd();
+            wtzqssjy.Zbs = Encoding.Default.GetString(sumRecords).TrimEnd();
+            wtzqssjy.Zje = Encoding.Default.GetString(sumMoney).TrimEnd();
 
             string fileName = "";
             Thread.Sleep(2000);
-            WTZQ_ShishiJiaoyiBusiness(whichBank, s2, s3, s4, s5, s6, out fileName);
-            string result = WTZQ_ShishiJiaoyiRizhongDuizhangMessage(s1, s2, s3, s4, s5, s6, fileName);
+            WTZQ_ShishiJiaoyiBusiness(whichBank, wtzqssjy, out fileName);
+            string result = WTZQ_ShishiJiaoyiRizhongDuizhangMessage(wtzqssjy, fileName);
 
             LogHelper.WriteLogInfo("网厅支取——实时交易日终对账", "成功");
             return Encoding.Default.GetBytes(result);
         }
 
-
         /// <summary>
         /// 网厅支取--实时交易日终对账业务处理，产生明细文件
         /// </summary>
-        /// <param name="whichBank"></param>
-        /// <param name="batchCodeStart"></param>
-        /// <param name="batchCodeEnd"></param>
-        /// <param name="jgm"></param>
-        /// <param name="sumRecords"></param>
-        /// <param name="sumMoney"></param>
-        /// <param name="outFileName">产生的明细文件名称 </param>
-        private void WTZQ_ShishiJiaoyiBusiness(string whichBank, string batchCodeStart, string batchCodeEnd,
-            string jgm, string sumRecords, string sumMoney, out string outFileName)
+        /// <param name="whichBank">行别</param>
+        /// <param name="wtzqssjy">业务实体</param>
+        /// <param name="outFileName">产生的明细文件名称</param>
+        private void WTZQ_ShishiJiaoyiBusiness(string whichBank, WtzqSsjyModel wtzqssjy, out string outFileName)
         {
             string strDate = DateTime.Now.ToShortDateString();
             string fileName = "";
-            fileName += jgm;
+            fileName += wtzqssjy.Jgm;
             fileName += "Z";//支取
             fileName += "_W";
             fileName += strDate;
@@ -75,19 +78,19 @@ namespace Business
             using (StreamWriter sw = new StreamWriter(fs, Encoding.GetEncoding("gb2312")))
             {
                 string summaryLine = string.Empty;
-                summaryLine += jgm;
+                summaryLine += wtzqssjy.Jgm;
                 summaryLine += ",";
                 summaryLine += strDate;
                 summaryLine += ",";
-                summaryLine += sumMoney;
+                summaryLine += wtzqssjy.Zje;
                 summaryLine += ",";
-                summaryLine += sumRecords;
+                summaryLine += wtzqssjy.Zbs;
                 summaryLine += ",";
                 sw.WriteLine(summaryLine);//汇总行
             }
 
             //明细行           
-            for (int i = 1; i <= Convert.ToInt32(sumRecords); i++)
+            for (int i = 1; i <= Convert.ToInt32(wtzqssjy.Zbs); i++)
             {
                 string strTime = string.Empty;
                 string detailLine = string.Empty;
@@ -132,13 +135,7 @@ namespace Business
         /// <param name="sumRecords"></param>
         /// <param name="sumMoney"></param>
         /// <returns></returns>
-        private string WTZQ_ShishiJiaoyiRizhongDuizhangMessage(string transcationCode,
-                                                                     string batchCodeStart,
-                                                                     string batchCodeEnd,
-                                                                     string jgm,
-                                                                     string sumRecords,
-                                                                     string sumMoney,
-                                                                     string fileName)
+        private string WTZQ_ShishiJiaoyiRizhongDuizhangMessage(WtzqSsjyModel wtzqssjy, string fileName)
         {
             string s = "";
             byte[] length = new byte[4];
@@ -153,16 +150,16 @@ namespace Business
             BusinessTools.SetByteArray(length, "0122");
             BusinessTools.SetByteArray(bTranCode, "3007");
             BusinessTools.SetByteArray(bRetuCode, "0000");
-            BusinessTools.SetByteArray(bJgm, jgm);
+            BusinessTools.SetByteArray(bJgm, wtzqssjy.Jgm);
 
             BusinessTools.InitializeByteArray(bRetuValueInfo, 60);
 
             BusinessTools.InitializeByteArray(bFileName, 60);
             BusinessTools.SetByteArray(bFileName, fileName);
             BusinessTools.InitializeByteArray(bSumRecords, 6);
-            BusinessTools.SetByteArray(bSumRecords, sumRecords);
+            BusinessTools.SetByteArray(bSumRecords, wtzqssjy.Zbs);
             BusinessTools.InitializeByteArray(bSumMoney, 16);
-            BusinessTools.SetByteArray(bSumMoney, sumMoney);
+            BusinessTools.SetByteArray(bSumMoney, wtzqssjy.Zje);
 
             s += Encoding.Default.GetString(length);
             s += Encoding.Default.GetString(bTranCode);

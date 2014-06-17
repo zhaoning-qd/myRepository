@@ -9,6 +9,9 @@ using System.Threading;
 using IDataAccess;
 using System.Configuration;
 
+using Entities;
+using Entities.BllModels;
+
 namespace Business
 {
     /// <summary>
@@ -39,7 +42,7 @@ namespace Business
             this.zzrq = Encoding.Default.GetString(zzrq).TrimEnd();
 
             //生成对账明细
-            string fileName = GenetrateCountCheckingFile(this.jym,this.yhzh,this.qsrq,this.zzrq);
+            string fileName = GenetrateCountCheckingFile(whichBank, this.jym,this.yhzh,this.qsrq,this.zzrq);
             //生成返回报文
             string s = "";
             s = BankCountCheckMessage(this.jym, this.yhzh, this.qsrq, this.zzrq,fileName);
@@ -56,7 +59,7 @@ namespace Business
         /// <param name="qsrq"></param>
         /// <param name="zzrq"></param>
         /// <returns></returns>
-        private string GenetrateCountCheckingFile(string transcationCode, string bankCount, string qsrq, string zzrq)
+        private string GenetrateCountCheckingFile(string whichBank,string transcationCode, string bankCount, string qsrq, string zzrq)
         {
             string fileName = "";
             fileName += "YHDZ";
@@ -67,6 +70,67 @@ namespace Business
             fileName += zzrq;
 
             //详细文件内容
+            IDB2Operation iDB2Operation = BusinessHelper.GetDb2Connection();
+            List<ZbmxzEntity> list = iDB2Operation.GetZbmxzByJyrq(this.qsrq, this.zzrq);
+            string filePath = BusinessTools.GetFilePath(whichBank) + fileName;//文件的完整路径
+
+            FileStream fs = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.Write);
+            
+            //明细行
+            for (int i = 1; i <= list.Count; i++)
+            {
+                string detailLine = string.Empty;
+                detailLine += "M";
+                detailLine += "~";
+                detailLine += "杭州住房公积金管理中心萧山分中心";//账户名称，需要修改
+                detailLine += "~";
+                detailLine += list[i].Zh;
+                detailLine += "~";
+                detailLine += list[i].Yhls;
+                detailLine += "~";
+                detailLine += list[i].Pjhm;
+                detailLine += "~";
+                detailLine += list[i].Jyrq;
+                detailLine += "~";
+                detailLine += list[i].Jysj;
+                detailLine += "~";
+                detailLine += "划款";//摘要
+                detailLine += "~";
+                detailLine += list[i].Jdbz;
+                detailLine += "~";
+                detailLine += list[i].Fse;
+                detailLine += "~";
+                detailLine += list[i].Ye;
+                detailLine += "~";
+                detailLine += list[i].Dfhm;
+                detailLine += "~";
+                detailLine += list[i].Dfzh;
+                detailLine += "~";
+
+                using (StreamWriter sw = new StreamWriter(filePath, true, Encoding.GetEncoding("gb2312")))
+                {
+                    sw.WriteLine(detailLine);
+                }
+
+                //汇总行
+                using (StreamWriter sw = new StreamWriter(fs, Encoding.GetEncoding("gb2312")))
+                {
+                    string summaryLine = string.Empty;
+                    summaryLine +="H";
+                    summaryLine += "~";
+                    summaryLine += "5";//借方笔数
+                    summaryLine += "~";
+                    summaryLine += "1000000";//借方发生额
+                    summaryLine += "~";
+                    summaryLine += "2";//贷方笔数
+                    summaryLine += "~";
+                    summaryLine += "1000000";//贷方发生额
+                    summaryLine += "~";
+                    summaryLine += "435654";//余额
+                    summaryLine += "~";
+                    sw.WriteLine(summaryLine);//汇总行
+                }
+            }
 
             return fileName;
         }

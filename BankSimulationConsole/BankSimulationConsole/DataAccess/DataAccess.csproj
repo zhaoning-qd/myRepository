@@ -51,6 +51,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Entities\Entities.csproj">
+      <Project>{7b784afe-ba87-44dc-a1b5-a54a193c4e02}</Project>
+      <Name>Entities</Name>
+    </ProjectReference>
     <ProjectReference Include="..\IDataAccess\IDataAccess.csproj">
       <Project>{575D2C2D-1789-468A-9F9A-5DAD692EEA7A}</Project>
       <Name>IDataAccess</Name>

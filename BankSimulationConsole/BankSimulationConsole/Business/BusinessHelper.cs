@@ -4,6 +4,7 @@ using IDataAccess;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Data;
 using System.Linq;
 using System.Text;
 
@@ -18,6 +19,20 @@ namespace Business
         public static int  SetYe()
         {
             return 200000;
+        }
+
+        /// <summary>
+        /// 获取DB2连接
+        /// </summary>
+        /// <returns></returns>
+        public static IDB2Operation GetDb2Connection()
+        {
+            string assemblyName = "DataAccess";
+            string namespaceName = "DataAccess";
+            string className = ConfigurationManager.AppSettings["db2Operation"].Split(new char[] { '.' })[1];
+            IDB2Operation iDB2Operation = BusinessFactory.CreateInstance<IDB2Operation>(assemblyName, namespaceName, className);
+
+            return iDB2Operation;
         }
 
         /// <summary>
@@ -131,5 +146,6 @@ namespace Business
 
             return (zt1 && zt2);
         }
+
     }
 }

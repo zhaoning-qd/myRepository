@@ -42,6 +42,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BllModels\WtdkJsjyRzdzModel.cs" />
+    <Compile Include="BllModels\WtjcZkjyDzModel.cs" />
+    <Compile Include="BllModels\WtWyzhDzModel.cs" />
+    <Compile Include="BllModels\WtzqSsjyModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UserPipeLine.cs" />
     <Compile Include="ZbfhzEntity.cs" />

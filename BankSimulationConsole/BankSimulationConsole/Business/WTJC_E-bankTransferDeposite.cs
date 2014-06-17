@@ -2,10 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using IBusiness;
-using CommonTools;
 using System.Threading;
 using System.IO;
+
+using IBusiness;
+using CommonTools;
+using Entities.BllModels;
+using Entities;
+using IDataAccess;
+using System.Configuration;
 
 namespace Business
 {
@@ -14,6 +19,11 @@ namespace Business
     /// </summary>
     public class WTJC_E_bankTransferDeposite:GjjBusinessSuper
     {
+        /// <summary>
+        /// 业务实体
+        /// </summary>
+        WtWyzhDzModel wtWyzhDz = new WtWyzhDzModel();
+        
          /// <summary>
         /// 处理业务
         /// </summary>
@@ -28,18 +38,18 @@ namespace Business
             byte[] sumRecords = BusinessTools.SubBytesArray(recvBytes, 50, 6);
             byte[] sumMoney = BusinessTools.SubBytesArray(recvBytes, 56, 16);
 
-            string s1 = Encoding.Default.GetString(transcationCode);
-            string s2 = Encoding.Default.GetString(BbankCount);
-            string s3 = Encoding.Default.GetString(bDateStart);
-            string s4 = Encoding.Default.GetString(bDateEnd);
-            string s5 = Encoding.Default.GetString(sumRecords);
-            string s6 = Encoding.Default.GetString(sumMoney);
+            wtWyzhDz.Jym = Encoding.Default.GetString(transcationCode).TrimEnd();
+            wtWyzhDz.Yhzh = Encoding.Default.GetString(BbankCount).TrimEnd();
+            wtWyzhDz.Qsrq = Encoding.Default.GetString(bDateStart).TrimEnd();
+            wtWyzhDz.Zzrq = Encoding.Default.GetString(bDateEnd).TrimEnd();
+            wtWyzhDz.Zbs = Encoding.Default.GetString(sumRecords).TrimEnd();
+            wtWyzhDz.Zje = Encoding.Default.GetString(sumMoney).TrimEnd();
 
             string result = "";
             string fileName = "";
             Thread.Sleep(2000);
-            WTJC_WangyinZhuanzhangBusiness(whichBank, s2, s3, s4, s5, s6, out fileName);
-            result = WTJC_WangyinZhuanzhangMessage(s1, s2, s5, s6, fileName);
+            WTJC_WangyinZhuanzhangBusiness(whichBank, wtWyzhDz, out fileName);
+            result = WTJC_WangyinZhuanzhangMessage(wtWyzhDz, fileName);
 
             LogHelper.WriteLogInfo("网厅缴存--网银转账缴存对账", "成功");
             return Encoding.Default.GetBytes(result);
@@ -55,8 +65,7 @@ namespace Business
         /// <param name="sumRecords"></param>
         /// <param name="sumMoney"></param>
         /// <param name="outFileName"></param>
-        private void WTJC_WangyinZhuanzhangBusiness(string whichBank, string bankCount, string dateStart,
-            string dateEnd, string sumRecords, string sumMoney, out string outFileName)
+        private void WTJC_WangyinZhuanzhangBusiness(string whichBank, WtWyzhDzModel wtWyzhDz, out string outFileName)
         {
             string fileName = "";
             fileName += "11";//机构码
@@ -73,47 +82,49 @@ namespace Business
             outFileName = fileName;
 
             string filePath = BusinessTools.GetFilePath(whichBank) + fileName;//文件的完整路径
+
+
+            IDB2Operation iDB2Operation = BusinessHelper.GetDb2Connection();
+            List<ZbmxzEntity> list = iDB2Operation.GetZbmxzByJyrq(wtWyzhDz.Qsrq,wtWyzhDz.Zzrq);
+
             FileStream fs = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.Write);
             using (StreamWriter sw = new StreamWriter(fs, Encoding.GetEncoding("gb2312")))
             {
                 string summaryLine = string.Empty;
-                summaryLine += bankCount;
+                summaryLine += wtWyzhDz.Yhzh;
                 summaryLine += ",";
                 summaryLine += strDate;
                 summaryLine += ",";
-                summaryLine += sumMoney;
+                summaryLine += wtWyzhDz.Zje;
                 summaryLine += ",";
-                summaryLine += sumRecords;
+                summaryLine += wtWyzhDz.Zbs;
                 summaryLine += ",";
                 sw.WriteLine(summaryLine);//汇总行
             }
 
             //明细行
-            for (int i = 1; i <= Convert.ToInt32(sumRecords); i++)
+            for (int i = 1; i <= list.Count; i++)
             {
-                string strTime = string.Empty;
                 string detailLine = string.Empty;
-
-                strTime = DateTime.Now.ToLongTimeString();
                 detailLine += i.ToString();
                 detailLine += ",";
-                detailLine += strDate;
+                detailLine += list[i].Jyrq;
                 detailLine += ",";
-                detailLine += strTime;
+                detailLine += list[i].Jysj;
                 detailLine += ",";
                 detailLine += BusinessTools.GenerateBatchCode("110000000", i);//批次号
                 detailLine += ",";
                 detailLine += BusinessTools.GenerateName("李", i);
                 detailLine += ",";
-                detailLine += BusinessTools.GenerateBankCount("62220238040567399", i);
+                detailLine += list[i].Zh;
                 detailLine += ",";
-                detailLine += "1000.00";
+                detailLine += list[i].Fse;
                 detailLine += ",";
-                detailLine += BusinessTools.GenerateBankSerialNum(i);//银行流水
+                detailLine += list[i].Yhls;//银行流水
                 detailLine += ",";
-                detailLine += "1";//记账标志
+                detailLine += list[i].Jdbz;//记账标志
                 detailLine += ",";
-                detailLine += BusinessTools.GenerateBankSerialNum(i);//备注中添写银行流水号
+                detailLine += list[i].Yhls;//备注中添写银行流水号
                 detailLine += ",";
 
                 using (StreamWriter sw = new StreamWriter(filePath, true, Encoding.GetEncoding("gb2312")))
@@ -133,11 +144,7 @@ namespace Business
         /// <param name="sumMoney"></param>
         /// <param name="fileName"></param>
         /// <returns></returns>
-        public string WTJC_WangyinZhuanzhangMessage(string transcationCode,
-                                                                     string bankCount,
-                                                                     string sumRecords,
-                                                                     string sumMoney,
-                                                                     string fileName)
+        public string WTJC_WangyinZhuanzhangMessage(WtWyzhDzModel wtWyzhDz,string fileName)
         {
             string s = "";
             byte[] length = new byte[4];
@@ -155,14 +162,14 @@ namespace Business
 
             BusinessTools.InitializeByteArray(bRetuValueInfo, 60);
             BusinessTools.InitializeByteArray(bBankCount, 30);
-            BusinessTools.SetByteArray(bBankCount, "34543656564354");
+            BusinessTools.SetByteArray(bBankCount, wtWyzhDz.Yhzh);
 
             BusinessTools.InitializeByteArray(bFileName, 60);
             BusinessTools.SetByteArray(bFileName, fileName);
             BusinessTools.InitializeByteArray(bSumRecords, 6);
-            BusinessTools.SetByteArray(bSumRecords, sumRecords);
+            BusinessTools.SetByteArray(bSumRecords, wtWyzhDz.Zbs);
             BusinessTools.InitializeByteArray(bSumMoney, 16);
-            BusinessTools.SetByteArray(bSumMoney, sumMoney);
+            BusinessTools.SetByteArray(bSumMoney, wtWyzhDz.Zje);
 
             s += Encoding.Default.GetString(length);
             s += Encoding.Default.GetString(bTranCode);
