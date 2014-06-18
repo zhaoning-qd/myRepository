@@ -8,6 +8,8 @@ using System.IO;
 using System.Threading;
 using IDataAccess;
 using System.Configuration;
+using Entities.BllModels;
+using Entities;
 namespace Business
 {
     /// <summary>
@@ -16,14 +18,18 @@ namespace Business
     class DK_LoanRelease : GjjBusinessSuper
     {
         /// <summary>
+        /// 业务实体
+        /// </summary>
+        DkfyModel dkfy = new DkfyModel();
+        private string yhls = string.Empty;//银行流水
+
+        /// <summary>
         /// 处理业务
         /// </summary>
         public override byte[] HandleBusiness(byte[] recvBytes, string whichBank)
         {
             string s = "";
-            Thread.Sleep(3000);
             s = LoanReleaseMessage(recvBytes);
-
             LogHelper.WriteLogInfo("贷款发放", "成功");
             return Encoding.Default.GetBytes(s);
         }
@@ -57,12 +63,22 @@ namespace Business
             BusinessTools.InitializeByteArray(recvBank, 60);
             BusinessTools.InitializeByteArray(money, 12);
 
+            dkfy.Jym = "2005";
+            dkfy.Pch = Encoding.Default.GetString(BusinessTools.SubBytesArray(recvBytes, 4, 20)).TrimEnd();
+            Random random = new Random();
+            this.yhls =  BusinessTools.GenerateLongBankSerialNum(random.Next(99));
+            dkfy.Skrzh = Encoding.Default.GetString(BusinessTools.SubBytesArray(recvBytes, 114, 30)).TrimEnd();
+            dkfy.Fkrzh = Encoding.Default.GetString(BusinessTools.SubBytesArray(recvBytes, 24, 30)).TrimEnd();
+            dkfy.Fkrmc = Encoding.Default.GetString(BusinessTools.SubBytesArray(recvBytes, 54, 60)).TrimEnd();
+            dkfy.Je = Encoding.Default.GetString(BusinessTools.SubBytesArray(recvBytes, 276, 12)).TrimEnd();
+            dkfy.Skyhmc = Encoding.Default.GetString(BusinessTools.SubBytesArray(recvBytes, 144, 60)).TrimEnd();
+
             BusinessTools.SetByteArray(length, "0420");
-            BusinessTools.SetByteArray(transcationCode, "2005");
+            BusinessTools.SetByteArray(transcationCode, dkfy.Jym);
             BusinessTools.SetByteArray(returnCode, "0000");
             BusinessTools.SetByteArray(returnInfo, "success");
             batchCode = BusinessTools.SubBytesArray(recvBytes,4,20);
-            BusinessTools.SetByteArray(bankSeriaNum, "20140501");
+            BusinessTools.SetByteArray(bankSeriaNum, this.yhls);
             paryerCount = BusinessTools.SubBytesArray(recvBytes,24,30);
             payerName = BusinessTools.SubBytesArray(recvBytes, 54, 60);
             BusinessTools.SetByteArray(payBankName, "中国银行山东路支行");
@@ -87,6 +103,34 @@ namespace Business
             s += Encoding.Default.GetString(money);
 
             return s;
+        }
+
+        /// <summary>
+        /// 更新账表分户账和账表明细账
+        /// </summary>
+        private void UpdateZbInfo()
+        {
+            ZbfhzEntity zbfhz = new ZbfhzEntity();
+            ZbmxzEntity zbmxz = new ZbmxzEntity();
+
+            zbmxz.Zh = dkfy.Skrzh;
+            int iBs = BusinessHelper.GetCountByZh(zbmxz);
+            zbmxz.Bc = (iBs + 1).ToString();
+            zbmxz.Fse = dkfy.Je;
+            zbmxz.Yhls = this.yhls;
+            zbmxz.Pjhm = dkfy.Pch;
+            zbmxz.Jdbz = "2";
+            zbmxz.Ywlx = "1";
+            zbmxz.Dfzh = dkfy.Fkrzh;
+            zbmxz.Dfhm = dkfy.Fkrmc;
+            zbmxz.Zxjsh = dkfy.Fkrzh;
+
+            zbfhz.Yhzh = zbmxz.Zh;
+            zbfhz.Bs = zbmxz.Bc;
+            zbfhz.Hm = dkfy.Skyhmc;
+
+            BusinessHelper.UpateZbfhzAndZbmxz(zbmxz, zbfhz);
+
         }
     }
 }

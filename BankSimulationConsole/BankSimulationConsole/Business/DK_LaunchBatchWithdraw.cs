@@ -9,6 +9,7 @@ using System.IO;
 using IDataAccess;
 using System.Configuration;
 using Entities;
+using Entities.BllModels;
 
 namespace Business
 {
@@ -17,6 +18,7 @@ namespace Business
     /// </summary>
     public class DK_LaunchBatchWithdraw:MsgFirstBusinessSuper
     {
+        
         /// <summary>
         /// 产生立即响应消息
         /// </summary>
@@ -93,7 +95,6 @@ namespace Business
             byte[] sumRecords, byte[] sumMoney, byte[] fileName, out string fileGenerated)
         {
             //具体处理过程;
-            Thread.Sleep(3000);
             //从ftp服务器取文件,本程序中是从本机读取;
             string fileFromPath = BusinessTools.GetFilePath(whichBank); ;
             string inputLine = "";
@@ -201,8 +202,6 @@ namespace Business
                 return false;
             }
             return true;
-        }
-
-        
+        }       
     }
 }

@@ -9,6 +9,7 @@ using IBusiness;
 using CommonTools;
 using Entities;
 using Entities.BllModels;
+using IDataAccess;
 
 namespace Business
 {
@@ -55,6 +56,10 @@ namespace Business
 
         private void WT_DaikuanJiesuanBusiness(string whichBank, WtdkJsjyRzdzModel wtdkJsjyRzdz, out string outFileName)
         {
+            List<ZbmxzEntity> zbmxList = new List<ZbmxzEntity>();
+            IDB2Operation iDB2Operation = BusinessHelper.GetDb2Connection();
+            zbmxList = iDB2Operation.GetZbmxzByPch(wtdkJsjyRzdz.Kspch, wtdkJsjyRzdz.Jspch);
+
             string fileName = "";
             fileName += wtdkJsjyRzdz.Jgm;
             fileName += "D";//支取
@@ -86,7 +91,7 @@ namespace Business
             }
 
             //明细行
-            for (int i = 1; i <= Convert.ToInt32(wtdkJsjyRzdz.Zbs); i++)
+            for (int i = 1; i <= zbmxList.Count; i++)
             {
                 string strTime = string.Empty;
                 string detailLine = string.Empty;
@@ -98,19 +103,19 @@ namespace Business
                 detailLine += ",";
                 detailLine += strTime;
                 detailLine += ",";
-                detailLine += BusinessTools.GenerateBatchCode("110000000", i);//批次号
+                detailLine += zbmxList[i].Pjhm;//批次号
                 detailLine += ",";
                 detailLine += BusinessTools.GenerateName("李", i);
                 detailLine += ",";
-                detailLine += BusinessTools.GenerateBankCount("62220238040567399", i);
+                detailLine += zbmxList[i].Zh;
                 detailLine += ",";
-                detailLine += "1000.00";
+                detailLine += zbmxList[i].Fse;
                 detailLine += ",";
-                detailLine += BusinessTools.GenerateBankSerialNum(i);//银行流水
+                detailLine += zbmxList[i].Yhls;//银行流水
                 detailLine += ",";
-                detailLine += "1";//记账标志
+                detailLine += zbmxList[i].Jdbz;//记账标志
                 detailLine += ",";
-                detailLine += BusinessTools.GenerateBankSerialNum(i);//备注中添写银行流水号
+                detailLine += zbmxList[i].Yhls;//备注中添写银行流水号
                 detailLine += ",";
 
                 using (StreamWriter sw = new StreamWriter(filePath, true, Encoding.GetEncoding("gb2312")))

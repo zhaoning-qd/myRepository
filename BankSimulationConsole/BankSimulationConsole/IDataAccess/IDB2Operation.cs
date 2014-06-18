@@ -31,5 +31,20 @@ namespace IDataAccess
         /// <param name="w">业务实体</param>
         /// <returns>对象list</returns>
         List<ZbmxzEntity> GetZbmxzByJyrq(string qsrq, string zzrq);
+
+         /// <summary>
+        /// 根据机构码获取zbmxz中某机构的最大批次号
+        /// </summary>
+        /// <param name="jgm"></param>
+        /// <returns></returns>
+        string GetMaxBacthNum(string jgm);
+
+        /// <summary>
+        /// 根据开始批次号和结束批次号查询zbmxz
+        /// </summary>
+        /// <param name="spch"></param>
+        /// <param name="epch"></param>
+        /// <returns></returns>
+        List<ZbmxzEntity> GetZbmxzByPch(string spch, string epch);
     }
 }
